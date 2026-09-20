@@ -1,3 +1,4 @@
+from django.db.models import Count, F
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
@@ -35,7 +36,9 @@ class StationViewSet(viewsets.ModelViewSet):
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
+    queryset = Route.objects.select_related(
+        "source", "destination"
+    )
 
     def get_serializer_class(self):
 
@@ -54,7 +57,7 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
 
 
 class TrainViewSet(viewsets.ModelViewSet):
-    queryset = Train.objects.all()
+    queryset = Train.objects.select_related("train_type")
 
     def get_serializer_class(self):
 
@@ -70,7 +73,21 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 
 class JourneyViewSet(viewsets.ModelViewSet):
-    queryset = Journey.objects.all()
+    queryset = (
+        Journey.objects
+        .select_related(
+            "route__source",
+            "route__destination",
+            "train__train_type"
+        )
+        .prefetch_related("crew")
+        .annotate(
+            tickets_available=(
+                F("train__cargo_num") * F("train__places_in_cargo")
+                - Count("tickets")
+            )
+        )
+    )
 
     def get_serializer_class(self):
 
@@ -91,6 +108,25 @@ class OrderPagination(PageNumberPagination):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     pagination_class = OrderPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.action == "list":
+            queryset = queryset.prefetch_related(
+                "tickets__journey__route__source",
+                "tickets__journey__route__destination"
+            )
+        if self.action == "retrieve":
+            queryset = queryset.prefetch_related(
+                "tickets__journey__tickets",
+                "tickets__journey__crew",
+                "tickets__journey__route__source",
+                "tickets__journey__route__destination",
+                "tickets__journey__train__train_type",
+            )
+
+        return queryset
 
     def get_serializer_class(self):
 
