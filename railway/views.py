@@ -1,6 +1,10 @@
 from django.db.models import Count, F
-from rest_framework import viewsets
+from django_filters import rest_framework as filters
+from rest_framework import viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+
+from railway.permissions import IsAdminOrIfAuthenticatedReadOnly
 
 from railway.models import (
     Station,
@@ -30,15 +34,26 @@ from railway.serializers import (
 )
 
 
-class StationViewSet(viewsets.ModelViewSet):
+class StationViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
-class RouteViewSet(viewsets.ModelViewSet):
+class RouteViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Route.objects.select_related(
         "source", "destination"
     )
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
 
@@ -51,25 +66,59 @@ class RouteViewSet(viewsets.ModelViewSet):
         return RouteSerializer
 
 
-class TrainTypeViewSet(viewsets.ModelViewSet):
+class TrainTypeViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
-class TrainViewSet(viewsets.ModelViewSet):
+class TrainViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Train.objects.select_related("train_type")
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
 
-        if self.action in ("list", "retrieve"):
+        if self.action == "list":
             return TrainListSerializer
 
         return TrainSerializer
 
 
-class CrewViewSet(viewsets.ModelViewSet):
+class CrewViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+
+class JourneyFilter(filters.FilterSet):
+    departure_date = filters.DateFilter(
+        field_name="departure_time",
+        lookup_expr="date"
+    )
+    source = filters.CharFilter(
+        field_name="route__source__name",
+        lookup_expr="icontains"
+    )
+    destination = filters.CharFilter(
+        field_name="route__destination__name",
+        lookup_expr="icontains"
+    )
+
+    class Meta:
+        model = Journey
+        fields = ("departure_date", "source", "destination")
 
 
 class JourneyViewSet(viewsets.ModelViewSet):
@@ -88,6 +137,9 @@ class JourneyViewSet(viewsets.ModelViewSet):
             )
         )
     )
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = JourneyFilter
 
     def get_serializer_class(self):
 
@@ -108,9 +160,11 @@ class OrderPagination(PageNumberPagination):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     pagination_class = OrderPagination
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
 
         if self.action == "list":
             queryset = queryset.prefetch_related(
