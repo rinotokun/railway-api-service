@@ -14,6 +14,11 @@ from railway.models import (
 )
 
 
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ("id", "image")
+
+
 class StationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
@@ -48,10 +53,15 @@ class RouteDetailSerializer(serializers.ModelSerializer):
         fields = ("id", "source", "destination", "distance")
 
 
+class TrainTypeImageSerializer(ImageSerializer):
+    class Meta(ImageSerializer.Meta):
+        model = TrainType
+
+
 class TrainTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainType
-        fields = ("id", "name")
+        fields = ("id", "name", "image")
 
 
 class TrainSerializer(serializers.ModelSerializer):
@@ -82,10 +92,15 @@ class TrainListSerializer(serializers.ModelSerializer):
         )
 
 
+class CrewImageSerializer(ImageSerializer):
+    class Meta(ImageSerializer.Meta):
+        model = Crew
+
+
 class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name", "full_name")
+        fields = ("id", "first_name", "last_name", "full_name", "image")
 
 
 class JourneySerializer(serializers.ModelSerializer):

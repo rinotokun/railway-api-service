@@ -4,6 +4,8 @@ from rest_framework import viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
+from railway.filters import JourneyFilter
+from railway.mixins import UploadImageMixin
 from railway.permissions import IsAdminOrIfAuthenticatedReadOnly
 
 from railway.models import (
@@ -22,9 +24,11 @@ from railway.serializers import (
     RouteListSerializer,
     RouteDetailSerializer,
     TrainTypeSerializer,
+    TrainTypeImageSerializer,
     TrainSerializer,
     TrainListSerializer,
     CrewSerializer,
+    CrewImageSerializer,
     JourneySerializer,
     JourneyListSerializer,
     JourneyDetailSerializer,
@@ -69,11 +73,18 @@ class RouteViewSet(
 class TrainTypeViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
+    UploadImageMixin,
     viewsets.GenericViewSet,
 ):
     queryset = TrainType.objects.all()
-    serializer_class = TrainTypeSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+
+        if self.action == "upload_image":
+            return TrainTypeImageSerializer
+
+        return TrainTypeSerializer
 
 
 class TrainViewSet(
@@ -95,30 +106,18 @@ class TrainViewSet(
 class CrewViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
+    UploadImageMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Crew.objects.all()
-    serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_serializer_class(self):
 
-class JourneyFilter(filters.FilterSet):
-    departure_date = filters.DateFilter(
-        field_name="departure_time",
-        lookup_expr="date"
-    )
-    source = filters.CharFilter(
-        field_name="route__source__name",
-        lookup_expr="icontains"
-    )
-    destination = filters.CharFilter(
-        field_name="route__destination__name",
-        lookup_expr="icontains"
-    )
+        if self.action == "upload_image":
+            return CrewImageSerializer
 
-    class Meta:
-        model = Journey
-        fields = ("departure_date", "source", "destination")
+        return CrewSerializer
 
 
 class JourneyViewSet(viewsets.ModelViewSet):

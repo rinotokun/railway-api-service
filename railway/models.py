@@ -1,6 +1,21 @@
+import pathlib
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
+
+
+def image_file_path(instance, filename):
+    filename = (
+        f"{slugify(str(instance))}"
+        f"-{uuid.uuid4()}"
+        + pathlib.Path(filename).suffix
+    )
+    class_name = instance.__class__.__name__.lower()
+
+    return pathlib.Path(f"uploads/{class_name}/") / pathlib.Path(filename)
 
 
 class Station(models.Model):
@@ -37,6 +52,10 @@ class Route(models.Model):
 
 class TrainType(models.Model):
     name = models.CharField(max_length=255)
+    image = models.ImageField(
+        upload_to=image_file_path,
+        null=True
+    )
 
     class Meta:
         ordering = ["name"]
@@ -66,6 +85,10 @@ class Train(models.Model):
 class Crew(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
+    image = models.ImageField(
+        upload_to=image_file_path,
+        null=True
+    )
 
     class Meta:
         ordering = ["first_name"]
