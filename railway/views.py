@@ -293,11 +293,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        """Get a order by id."""
+        """Get an order by id."""
         return super().retrieve(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        """Create a order."""
+        """Create an order."""
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
