@@ -1,5 +1,6 @@
 from django.db.models import Count, F
 from django_filters import rest_framework as filters
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -47,6 +48,14 @@ class StationViewSet(
     serializer_class = StationSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def list(self, request, *args, **kwargs):
+        """Get a list of stations."""
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """Create a station."""
+        return super().create(request, *args, **kwargs)
+
 
 class RouteViewSet(
     mixins.ListModelMixin,
@@ -69,6 +78,18 @@ class RouteViewSet(
 
         return RouteSerializer
 
+    def list(self, request, *args, **kwargs):
+        """Get a list of routes."""
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """Create a route."""
+        return super().create(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Get a route by id."""
+        return super().retrieve(request, *args, **kwargs)
+
 
 class TrainTypeViewSet(
     mixins.CreateModelMixin,
@@ -86,6 +107,14 @@ class TrainTypeViewSet(
 
         return TrainTypeSerializer
 
+    def list(self, request, *args, **kwargs):
+        """Get a list of train types."""
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """Create a train type."""
+        return super().create(request, *args, **kwargs)
+
 
 class TrainViewSet(
     mixins.ListModelMixin,
@@ -101,6 +130,14 @@ class TrainViewSet(
             return TrainListSerializer
 
         return TrainSerializer
+
+    def list(self, request, *args, **kwargs):
+        """Get a list of trains."""
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """Create a train."""
+        return super().create(request, *args, **kwargs)
 
 
 class CrewViewSet(
@@ -118,6 +155,14 @@ class CrewViewSet(
             return CrewImageSerializer
 
         return CrewSerializer
+
+    def list(self, request, *args, **kwargs):
+        """Get a list of crews."""
+        return super().list(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """Create a crew member."""
+        return super().create(request, *args, **kwargs)
 
 
 class JourneyViewSet(viewsets.ModelViewSet):
@@ -149,6 +194,55 @@ class JourneyViewSet(viewsets.ModelViewSet):
             return JourneyDetailSerializer
 
         return JourneySerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="departure_date",
+                type={"type": "string"},
+                description=(
+                    "Filter by journey departure date "
+                    "(ex. ?departure_date=2026-05-13)"
+                ),
+            ),
+            OpenApiParameter(
+                name="source",
+                type={"type": "string"},
+                description="Filter by journey source (ex. ?source=Lviv)",
+            ),
+            OpenApiParameter(
+                name="destination",
+                type={"type": "string"},
+                description=(
+                    "Filter by journey destination "
+                    "(ex. ?destination=Kyiv)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get a list of journeys."""
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Get a journey by id."""
+        return super().retrieve(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """Create a journey."""
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Update journey by id."""
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """Partial update journey by id."""
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete journey by id."""
+        return super().destroy(request, *args, **kwargs)
 
 
 class OrderPagination(PageNumberPagination):
@@ -193,3 +287,27 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        """Get a list of orders."""
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Get a order by id."""
+        return super().retrieve(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """Create a order."""
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Update order by id."""
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """Partial update order by id."""
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete order by id."""
+        return super().destroy(request, *args, **kwargs)
