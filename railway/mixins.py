@@ -13,6 +13,7 @@ class UploadImageMixin:
         permission_classes=[IsAdminUser]
     )
     def upload_image(self, request, pk=None):
+        """Upload an image by instance id."""
 
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
