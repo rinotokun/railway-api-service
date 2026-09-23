@@ -80,6 +80,9 @@ class TrainListSerializer(serializers.ModelSerializer):
     train_type = serializers.SlugRelatedField(
         many=False, read_only=True, slug_field="name"
     )
+    train_image = serializers.ImageField(
+        source="train_type.image", read_only=True
+    )
 
     class Meta:
         model = Train
@@ -88,7 +91,8 @@ class TrainListSerializer(serializers.ModelSerializer):
             "name",
             "cargo_num",
             "places_in_cargo",
-            "train_type"
+            "train_type",
+            "train_image"
         )
 
 
