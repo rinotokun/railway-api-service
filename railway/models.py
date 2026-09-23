@@ -47,7 +47,7 @@ class Route(models.Model):
         ordering = ["distance"]
 
     def __str__(self):
-        return self.source.name + " → " + self.destination.name
+        return f"{self.source} → {self.destination}"
 
 
 class TrainType(models.Model):
