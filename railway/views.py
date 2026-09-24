@@ -165,7 +165,13 @@ class CrewViewSet(
         return super().create(request, *args, **kwargs)
 
 
-class JourneyViewSet(viewsets.ModelViewSet):
+class JourneyViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = (
         Journey.objects
         .select_related(
@@ -239,10 +245,6 @@ class JourneyViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         """Partial update journey by id."""
         return super().partial_update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        """Delete journey by id."""
-        return super().destroy(request, *args, **kwargs)
 
 
 class OrderPagination(PageNumberPagination):
