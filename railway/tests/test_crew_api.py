@@ -4,6 +4,7 @@ import shutil
 
 from PIL import Image
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -13,7 +14,6 @@ from rest_framework import status
 from railway.models import Crew
 from railway.serializers import CrewSerializer
 from railway.tests.fixtures import sample_crew
-from railway_service.settings import BASE_DIR
 
 
 DUMMY_CACHE = {
@@ -31,7 +31,7 @@ def image_upload_url(crew_id):
 
 
 @override_settings(
-    MEDIA_ROOT=BASE_DIR / "test_image_crew",
+    MEDIA_ROOT=tempfile.mkdtemp(),
     CACHES=DUMMY_CACHE
 )
 class CrewImageUploadTests(TestCase):
@@ -50,7 +50,7 @@ class CrewImageUploadTests(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree("./test_image_crew", ignore_errors=True)
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
 
     def test_upload_image_to_crew(self):
