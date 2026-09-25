@@ -185,7 +185,7 @@ class JourneyViewSet(
                 F("train__cargo_num") * F("train__places_in_cargo")
                 - Count("tickets")
             )
-        )
+        ).order_by("departure_time")
     )
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
     filter_backends = (filters.DjangoFilterBackend,)
